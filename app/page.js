@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Box, Stack, Typography, Button, Modal, TextField, IconButton, InputAdornment } from '@mui/material'
-import { Add, Remove, Search } from '@mui/icons-material'
+import { Box, Stack, Typography, Button, Modal, TextField, IconButton, InputAdornment, Pagination, Card, CardContent, CardMedia } from '@mui/material'
+import { Add, Remove, Search, ArrowForward, ArrowBack } from '@mui/icons-material'
 import { firestore } from './firebase'
 import {
   collection,
@@ -25,6 +25,9 @@ const style = {
   p: 4,
 }
 
+const API_KEY = 'a3b181614d9e422f81e9062fba23c030';
+const RECIPE_API_URL = 'https://api.spoonacular.com/recipes/findByIngredients';
+
 export default function Home() {
   const [inventory, setInventory] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -32,6 +35,10 @@ export default function Home() {
   const [open, setOpen] = useState(false)
   const [itemName, setItemName] = useState('')
   const [itemQuantity, setItemQuantity] = useState('')
+  const [recipes, setRecipes] = useState([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [recipesPerPage] = useState(5)
+  const [showRecipes, setShowRecipes] = useState(false)
 
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
@@ -101,6 +108,26 @@ export default function Home() {
     }
   }
 
+  const fetchRecipes = async () => {
+    const ingredientString = filteredInventory.map(item => item.name).join(',')
+    const response = await fetch(`${RECIPE_API_URL}?apiKey=${API_KEY}&ingredients=${ingredientString}`);
+    const data = await response.json();
+    setRecipes(data);
+  }
+
+  const handleRecipeSearch = () => {
+    fetchRecipes();
+    setShowRecipes(true);
+  }
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  }
+
+  const indexOfLastRecipe = currentPage * recipesPerPage;
+  const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
+  const currentRecipes = recipes.slice(indexOfFirstRecipe, indexOfLastRecipe);
+
   useEffect(() => {
     updateInventory()
   }, [])
@@ -162,89 +189,140 @@ export default function Home() {
         </Box>
       </Modal>
       <Stack spacing={2} width="100%" maxWidth="900px">
-        <Button variant="contained" onClick={handleOpen} sx={{ alignSelf: 'flex-start' }}>
-          Add New Item
-        </Button>
-        <TextField
-          label="Search Items"
-          variant="outlined"
-          value={searchTerm}
-          onChange={handleSearch}
-          fullWidth
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Box borderRadius={2} overflow="hidden" boxShadow={2}>
-          <Box
-            bgcolor={'#1976d2'}
-            display={'flex'}
-            justifyContent={'center'}
-            alignItems={'center'}
-            padding={2}
-          >
-            <Typography variant={'h4'} color={'white'} textAlign={'center'}>
-              Inventory Items
-            </Typography>
-          </Box>
-          <Stack spacing={2} padding={2} bgcolor="white" borderRadius={2}>
-            {filteredInventory.map(({ name, quantity }) => (
+        {!showRecipes ? (
+          <>
+            <Button variant="contained" onClick={handleOpen} sx={{ alignSelf: 'flex-start' }}>
+              Add New Item
+            </Button>
+            <TextField
+              label="Search Items"
+              variant="outlined"
+              value={searchTerm}
+              onChange={handleSearch}
+              fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Box borderRadius={2} overflow="hidden" boxShadow={2}>
               <Box
-                key={name}
+                bgcolor={'#1976d2'}
                 display={'flex'}
-                justifyContent={'space-between'}
+                justifyContent={'center'}
                 alignItems={'center'}
                 padding={2}
-                border={'1px solid #ddd'}
-                borderRadius={1}
-                boxShadow={1}
               >
-                <Typography variant={'h5'} color={'#333'} sx={{ flexGrow: 1, textAlign: 'center' }}>
-                  {name.charAt(0).toUpperCase() + name.slice(1)}
+                <Typography variant={'h4'} color={'white'} textAlign={'center'}>
+                  Inventory Items
                 </Typography>
-                <Stack
-                  direction={'row'}
-                  alignItems={'center'}
-                  spacing={1}
-                  sx={{ flexGrow: 1, justifyContent: 'center' }}
-                >
-                  <IconButton onClick={() => decreaseQuantity(name)} color="primary" size="large">
-                    <Remove fontSize="inherit" />
-                  </IconButton>
-                  <TextField
-                    type="number"
-                    variant="outlined"
-                    value={quantity}
-                    onChange={(e) => updateItemQuantity(name, e.target.value)}
-                    sx={{
-                      width: '80px',
-                      fontSize: '1.5rem',
-                      textAlign: 'center',
-                    }}
-                    inputProps={{
-                      style: { textAlign: 'center', fontSize: '1.25rem' },
-                    }}
-                  />
-                  <IconButton onClick={() => increaseQuantity(name)} color="primary" size="large">
-                    <Add fontSize="inherit" />
-                  </IconButton>
-                </Stack>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => removeItem(name)}
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  Remove
-                </Button>
               </Box>
-            ))}
-          </Stack>
-        </Box>
+              <Stack spacing={2} padding={2} bgcolor="white" borderRadius={2}>
+                {filteredInventory.map(({ name, quantity }) => (
+                  <Box
+                    key={name}
+                    display={'flex'}
+                    justifyContent={'space-between'}
+                    alignItems={'center'}
+                    padding={2}
+                    border={'1px solid #ddd'}
+                    borderRadius={1}
+                    boxShadow={1}
+                  >
+                    <Typography variant={'h5'} color={'#333'} sx={{ flexGrow: 1, textAlign: 'center' }}>
+                      {name.charAt(0).toUpperCase() + name.slice(1)}
+                    </Typography>
+                    <Stack
+                      direction={'row'}
+                      alignItems={'center'}
+                      spacing={1}
+                      sx={{ flexGrow: 1, justifyContent: 'center' }}
+                    >
+                      <IconButton onClick={() => decreaseQuantity(name)} color="primary" size="large">
+                        <Remove fontSize="inherit" />
+                      </IconButton>
+                      <TextField
+                        type="number"
+                        variant="outlined"
+                        value={quantity}
+                        onChange={(e) => updateItemQuantity(name, e.target.value)}
+                        sx={{
+                          width: '80px',
+                          fontSize: '1.5rem',
+                          textAlign: 'center',
+                        }}
+                        inputProps={{
+                          style: { textAlign: 'center', fontSize: '1.25rem' },
+                        }}
+                      />
+                      <IconButton onClick={() => increaseQuantity(name)} color="primary" size="large">
+                        <Add fontSize="inherit" />
+                      </IconButton>
+                    </Stack>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => removeItem(name)}
+                      sx={{ fontWeight: 'bold' }}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+            <Button
+              variant="outlined"
+              onClick={handleRecipeSearch}
+              sx={{ marginTop: 2 }}
+            >
+              Get Recipe Suggestions
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="outlined"
+              onClick={() => setShowRecipes(false)}
+              sx={{ marginBottom: 2 }}
+            >
+              Back to Inventory
+            </Button>
+            <Stack spacing={2} width="100%" maxWidth="900px">
+              {currentRecipes.length === 0 ? (
+                <Typography>No recipes found</Typography>
+              ) : (
+                currentRecipes.map((recipe) => (
+                  <Card key={recipe.id} sx={{ display: 'flex', marginBottom: 2 }}>
+                    <CardMedia
+                      component="img"
+                      sx={{ width: 100, height: 100 }}
+                      image={recipe.image}
+                      alt={recipe.title}
+                    />
+                    <CardContent sx={{ flex: '1 0 auto' }}>
+                      <Typography variant="h6" sx={{ color: 'black' }}>
+                        {recipe.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {recipe.summary}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+              <Pagination
+                count={Math.ceil(recipes.length / recipesPerPage)}
+                page={currentPage}
+                onChange={handlePageChange}
+                sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}
+              />
+            </Stack>
+          </>
+        )}
       </Stack>
     </Box>
   )
