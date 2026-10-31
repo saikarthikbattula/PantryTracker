@@ -1,3 +1,7 @@
+# Legacy scaffold (unused)
+
+The active pantry app lives at the repository root. This older Create React App scaffold is retained for reference and is not installed or deployed by the active app.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
