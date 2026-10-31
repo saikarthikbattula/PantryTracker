@@ -1,5 +1,7 @@
 # Pantry
 
+Live app: https://pantry-tracker-six-lime.vercel.app
+
 A Next.js + React + Material UI kitchen inventory. Gemini powers photo identification and recipe suggestions; Firebase adds per-user cloud sync.
 
 ## Run
@@ -17,7 +19,7 @@ Use Node 22+: `npm ci`, copy `.env.example` to `.env.local`, then `npm run dev`.
 
 ## Firebase
 
-Set all four `NEXT_PUBLIC_FIREBASE_*` values. Enable Anonymous and Google in Firebase Authentication, authorize your host, create Firestore, and deploy `firestore.rules` with `firebase deploy --only firestore:rules`. Rules restrict reads and writes to the authenticated UID and validate stored fields. Test these rules against your project/emulator before public deployment; cloud sync has not been verified with live credentials.
+Set all four `NEXT_PUBLIC_FIREBASE_*` values. Enable Anonymous and Google in Firebase Authentication, authorize your host, create Firestore, and deploy `firestore.rules` with `firebase deploy --only firestore:rules`. Rules restrict reads and writes to the authenticated UID and validate stored fields. Test these rules against your project/emulator before public deployment; live anonymous-client read/write and access-restriction checks passed after cloud setup.
 
 The legacy shared `inventory` collection is intentionally not read. Export/migrate old data into the correct user's collection rather than granting public access.
 
