@@ -11,6 +11,7 @@ import {
   observeAuth,
 } from "../lib/firebase";
 import { itemId, validateItem, mergeItem, sample } from "../lib/inventory";
+import { postJSON as api } from "../lib/client-api";
 const blank = { name: "", quantity: 1, category: "Produce", expires: "" };
 export default function Pantry() {
   const [items, setItems] = useState([]),
@@ -112,16 +113,6 @@ export default function Pantry() {
       await mutate(itemId(next.name), (old) => mergeItem(old, next));
       setForm(blank);
     });
-  }
-  async function api(path, body) {
-    const r = await fetch(path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error);
-    return d;
   }
   async function photo(file) {
     if (!file) return;
