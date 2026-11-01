@@ -1,5 +1,6 @@
 import { z, readBody, guard, failure, HttpError } from "../../../lib/http.js";
 import { generate } from "../../../lib/gemini.js";
+export const maxDuration = 60;
 export async function POST(req) {
   try {
     guard(req);

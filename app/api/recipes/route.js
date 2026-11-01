@@ -1,5 +1,7 @@
 import { z, readBody, guard, failure } from "../../../lib/http.js";
 import { generate, configured } from "../../../lib/gemini.js";
+// Let the 25-second Gemini deadline return JSON before hosting terminates the request.
+export const maxDuration = 60;
 const recipe = z.object({
   title: z.string().min(1).max(150),
   description: z.string().max(500),
